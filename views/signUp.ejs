@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            /* Light mode background color */
+            color: #000000;
+            /* Light mode text color */
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            background-color: #ffffff;
+            /* Light mode background color */
+            height: 100vh;
+        }
+
+        .title {
+            color: #000000;
+            /* Light mode text color */
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .form-container {
+            position: relative;
+            padding: 1rem;
+            background-color: #f0f0f0;
+            /* Light mode form background color */
+            border: 1px solid #cccccc;
+            /* Light mode form border color */
+            border-radius: 0.5rem;
+        }
+
+        .form-item {
+            margin-bottom: 1rem;
+        }
+
+        .form-item label {
+            color: #000000;
+            /* Light mode label text color */
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .form-item input {
+            width: 80%;
+            /* Set input width to 80% */
+            padding: 0.5rem;
+            border: none;
+            border-radius: 0.25rem;
+            background-color: #e0e0e0;
+            /* Light mode input background color */
+            color: #000000;
+            /* Light mode input text color */
+        }
+
+        .form-item input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #00bcd4;
+        }
+
+        #submit-btn {
+            padding: 0.5rem 1rem;
+            background-color: #00bcd4;
+            border: none;
+            border-radius: 0.25rem;
+            color: #ffffff;
+            /* Light mode button text color */
+            cursor: pointer;
+        }
+
+        #submit-btn:hover {
+            background-color: #0097a7;
+        }
+
+        .text-link {
+            margin-left: 0.25rem;
+            color: #2196f3;
+            text-decoration: none;
+        }
+
+        .text-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="title">Sign Up</h1>
+        <div class="form-container">
+            <form id="signup-form" class="space-y-2">
+                <div class="form-item">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required placeholder="John Smith">
+                </div>
+                <div class="form-item">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required placeholder="example@gmail.com">
+                </div>
+                <button type="submit" id="submit-btn">Sign Up</button>
+                <p class="ml-1 text-[12px] text-black">Already have an account <a href="/sign-in" class="text-link">Sign
+                        In</a></p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('signup-form');
+            const submitBtn = document.getElementById('submit-btn');
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                const formData = new FormData(form);
+                const jsonData = {};
+                formData.forEach((value, key) => {
+                    jsonData[key] = value;
+                });
+
+                fetch('/auth/sign-up', {
+                    method: 'POST',
+                    body: JSON.stringify(jsonData),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 400) {
+                            alert(data.message);
+                        } else {
+                            alert(data.message);
+                            window.location.href = '/new-password';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while submitting the form.');
+                    });
+            });
+        });
+
+    </script>
+</body>
+
+</html>

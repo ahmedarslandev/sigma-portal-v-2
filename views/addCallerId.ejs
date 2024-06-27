@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add callerIds</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            height: 100vh;
+            background-color: #ffffff;
+
+        }
+
+        .title {
+            background: linear-gradient(to right, #06b6d4, #facc15);
+            -webkit-background-clip: text;
+            color: transparent;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .form-container {
+            padding: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: auto;
+            height: 50vh;
+            background-color: #f9f9f9;
+        }
+
+        .form-container h1 {
+            background: linear-gradient(to right, #06b6d4, #facc15);
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .textarea {
+            width: 300px;
+            height: 100px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+
+        .button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            background-color: #06b6d4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .loading-icon {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="title">Add callerIds</h1>
+        <div class="form-container">
+            <form id="callerIdsForm" class="flex flex-col justify-center items-center gap-5">
+                <h1>To add callerIds paste the ids in textarea</h1>
+                <p>If you want to go back to the profile page then click <a href="/profile/details">Profile Page</a></p>
+                <label for="callerIds"></label>
+                <textarea id="callerIds" class="textarea" name="callerIds" placeholder="Paste DIDs Here"></textarea>
+                <div class="flex flex-col justify-center items-center gap-5">
+                    <button id="submitButton" class="button" type="submit">Add</button>
+                </div>
+            </form>
+            <div id="response">
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('callerIdsForm');
+            const submitButton = document.getElementById('submitButton');
+            const callerIdsTextarea = document.getElementById('callerIds');
+            const response = document.getElementById('response');
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<span class="loading-icon">🔄</span> Loading...';
+
+                const callerIds = callerIdsTextarea.value;
+                const callerIdsArray = callerIds
+                    .split("\n")
+                    .map(id => id.trim())
+                    .filter(id => id !== "");
+
+                const batchSize = 100;
+                const chunks = [];
+                for (let i = 0; i < callerIdsArray.length; i += batchSize) {
+                    chunks.push(callerIdsArray.slice(i, i + batchSize));
+                }
+
+                try {
+                    for (const chunk of chunks) {
+                        const promises = chunk.map(code =>
+                            fetch('/portals/add-callerId', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ Number: code })
+                            }).then(async (res) => {
+                                const data = await res.json()
+                                response.innerHTML += `<div>${data?.message}</div>`
+                            })
+
+                        );
+
+                        await Promise.all(promises);
+                    }
+
+                    window.location.replace('/profile/details');
+                } catch (error) {
+                    alert(`Error: ${error.message}`);
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = 'Add';
+                }
+            });
+        });
+
+    </script>
+</body>
+
+</html>
